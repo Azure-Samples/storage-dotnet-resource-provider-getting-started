@@ -26,7 +26,7 @@ Select it from the list of applications to start it.
 
 To run the sample using the Visual Studio
 
-1. Update the Program.cs with values of <subscriptionid>, <applicationId>, <password>, <tenantId> by following this link - https://azure.microsoft.com/en-gb/documentation/articles/virtual-machines-arm-deployment/
+1. Update the Program.cs with values of subscriptionid, applicationId, password, tenantId by following this link - https://azure.microsoft.com/en-gb/documentation/articles/virtual-machines-arm-deployment/
 2. Set breakpoints and run the project.
 
 ## More information
