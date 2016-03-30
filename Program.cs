@@ -23,6 +23,8 @@ using Microsoft.Azure.Management.Resources;
 using Microsoft.Azure.Management.Resources.Models;
 using Microsoft.Azure.Management.Storage;
 using Microsoft.Azure.Management.Storage.Models;
+using Microsoft.Rest;
+using Microsoft.Rest.Azure;
 
 /// <summary>
 /// Azure Storage Resource Provider Sample - Demonstrate how to create and manage storage accounts using Storage Resource Provider. 
@@ -42,8 +44,8 @@ namespace AzureStorageNew
         //Resource Group Name. Replace this with a Resource Group of your choice.
         const string rgName = "TestResourceGroup";        
         
-        //Storage Account Name. Replace this with a storage account of your choice.
-        const string accountName = "teststorageaccount";
+        //Storage Account Name. Using random value to avoid conflicts.  Replace this with a storage account of your choice.
+        static string accountName = "storagesample" + Guid.NewGuid().ToString().Substring(0,8);
 
         //Please follow the Tutorial - at the link - https://azure.microsoft.com/en-gb/documentation/articles/virtual-machines-arm-deployment/
         //This tutorial shows you how to use some of the available clients in the Compute, Storage, and Network .NET libraries 
@@ -63,7 +65,7 @@ namespace AzureStorageNew
         // These are used to create default accounts. You can choose any location and any storage account type.
 
         const string DefaultLocation = "westus"; 
-        public static AccountType DefaultAccountType = AccountType.StandardGRS;
+        public static Sku DefaultSku = new Sku(SkuName.StandardGRS);
         public static Dictionary<string, string> DefaultTags = new Dictionary<string, string> 
         {
             {"key1","value1"},
@@ -90,12 +92,15 @@ namespace AzureStorageNew
         static void Main(string[] args)
         {
             string token = GetAuthorizationHeader();
-            TokenCloudCredentials credential = new TokenCloudCredentials(subscriptionId, token);
-            ResourceManagementClient resourcesClient = new ResourceManagementClient(credential);
-            StorageManagementClient storageMgmtClient = new StorageManagementClient(credential);
+            TokenCredentials credential = new TokenCredentials(token);
+            ResourceManagementClient resourcesClient = new ResourceManagementClient(credential) { SubscriptionId = subscriptionId };
+            StorageManagementClient storageMgmtClient = new StorageManagementClient(credential) { SubscriptionId = subscriptionId };
 
             try
             {
+                //Register the Storage Resource Provider with the Subscription
+                RegisterStorageResourceProvider(resourcesClient);
+
                 //Create a new resource group
                 CreateResourceGroup(rgName, resourcesClient);
 
@@ -103,30 +108,30 @@ namespace AzureStorageNew
                 CreateStorageAccount(rgName, accountName, storageMgmtClient);
 
                 //Get all the account properties for a given resource group and account name
-                StorageAccount storAcct = storageMgmtClient.StorageAccounts.GetProperties(rgName, accountName).StorageAccount;
+                StorageAccount storAcct = storageMgmtClient.StorageAccounts.GetProperties(rgName, accountName);
 
                 //Get a list of storage accounts within a specific resource group
-                IList<StorageAccount> storAccts = storageMgmtClient.StorageAccounts.ListByResourceGroup(rgName).StorageAccounts;
+                IEnumerable<StorageAccount> storAccts = storageMgmtClient.StorageAccounts.ListByResourceGroup(rgName);
 
                 //Get all the storage accounts for a given subscription
-                IList<StorageAccount> storAcctsSub = storageMgmtClient.StorageAccounts.List().StorageAccounts;
+                IEnumerable<StorageAccount> storAcctsSub = storageMgmtClient.StorageAccounts.List();
 
                 //Get the storage account keys for a given account and resource group
-                StorageAccountKeys acctKeys = storageMgmtClient.StorageAccounts.ListKeys(rgName, accountName).StorageAccountKeys;
+                IList<StorageAccountKey> acctKeys = storageMgmtClient.StorageAccounts.ListKeys(rgName, accountName).Keys;
 
                 //Regenerate the account key for a given account in a specific resource group
-                StorageAccountKeys regenAcctKeys = storageMgmtClient.StorageAccounts.RegenerateKey(rgName, accountName, KeyName.Key1).StorageAccountKeys;
+                IList<StorageAccountKey> regenAcctKeys = storageMgmtClient.StorageAccounts.RegenerateKey(rgName, accountName, "key1").Keys;
 
                 //Update the storage account for a given account name and resource group
                 UpdateStorageAccount(rgName, accountName, storageMgmtClient);
 
                 //Check if the account name is available
-                bool nameAvailable = storageMgmtClient.StorageAccounts.CheckNameAvailability(accountName).NameAvailable;
+                bool? nameAvailable = storageMgmtClient.StorageAccounts.CheckNameAvailability(accountName).NameAvailable;
                 
                 //Delete a storage account with the given account name and a resource group
                 DeleteStorageAccount(rgName, accountName, storageMgmtClient);
             }
-            catch (Hyak.Common.CloudException ce)
+            catch (CloudException ce)
             {
                 Console.WriteLine(ce.Message);
                 Console.ReadLine();
@@ -138,6 +143,15 @@ namespace AzureStorageNew
             }
         }
 
+        /// <summary>
+        /// Registers the Storage Resource Provider in the subscription.
+        /// </summary>
+        /// <param name="resourcesClient"></param>
+        public static void RegisterStorageResourceProvider(ResourceManagementClient resourcesClient)
+        {
+            resourcesClient.Providers.Register("Microsoft.Storage");
+        }
+        
         /// <summary>
         /// Creates a new resource group with the specified name
         /// If one already exists then it gets updated
@@ -164,7 +178,7 @@ namespace AzureStorageNew
             StorageAccountCreateParameters parameters = GetDefaultStorageAccountParameters();
             Console.WriteLine("Creating a storage account...");
             var storageAccountCreateResponse = storageMgmtClient.StorageAccounts.Create(rgname, acctName, parameters);
-            Console.WriteLine("Storage account created with name " + storageAccountCreateResponse.StorageAccount.Name);                                                                     
+            Console.WriteLine("Storage account created with name " + storageAccountCreateResponse.Name);                                                                     
         }
 
         /// <summary>
@@ -176,7 +190,7 @@ namespace AzureStorageNew
         private static void DeleteStorageAccount(string rgname, string acctName, StorageManagementClient storageMgmtClient)
         {
             Console.WriteLine("Deleting a storage account...");
-            var deleteRequest = storageMgmtClient.StorageAccounts.Delete(rgname, acctName);
+            storageMgmtClient.StorageAccounts.Delete(rgname, acctName);
             Console.WriteLine("Storage account " + acctName + " deleted");
         }                                               
 
@@ -192,10 +206,10 @@ namespace AzureStorageNew
             // Update storage account type
             var parameters = new StorageAccountUpdateParameters
             {
-                AccountType = AccountType.StandardLRS
+                Sku = new Sku(SkuName.StandardLRS)
             };
             var response = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
-            Console.WriteLine("Account type on storage account updated to " + response.StorageAccount.AccountType);           
+            Console.WriteLine("Account type on storage account updated to " + response.Sku.Name);           
         }                                     
 
         /// <summary>
@@ -208,7 +222,7 @@ namespace AzureStorageNew
             {
                 Location = DefaultLocation,
                 Tags = DefaultTags,
-                AccountType = DefaultAccountType
+                Sku = DefaultSku
             };
 
             return account;
