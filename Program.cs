@@ -105,7 +105,7 @@ namespace AzureStorageNew
                 CreateResourceGroup(rgName, resourcesClient);
 
                 //Create a new account in a specific resource group with the specified account name                     
-                CreateStorageAccount(rgName, accountName, storageMgmtClient);
+                CreateStorageAccount(rgName, accountName, false, false, storageMgmtClient);
 
                 //Get all the account properties for a given resource group and account name
                 StorageAccount storAcct = storageMgmtClient.StorageAccounts.GetProperties(rgName, accountName);
@@ -123,7 +123,9 @@ namespace AzureStorageNew
                 IList<StorageAccountKey> regenAcctKeys = storageMgmtClient.StorageAccounts.RegenerateKey(rgName, accountName, "key1").Keys;
 
                 //Update the storage account for a given account name and resource group
-                UpdateStorageAccount(rgName, accountName, storageMgmtClient);
+                UpdateStorageAccountSku(rgName, accountName, SkuName.StandardLRS, storageMgmtClient);
+                //UpdateStorageAccountTier(rgName, accountName, AccessTier.Hot, storageMgmtClient);
+                //UpdateStorageAccountEncryption(rgName, accountName, false, storageMgmtClient);
 
                 //Check if the account name is available
                 bool? nameAvailable = storageMgmtClient.StorageAccounts.CheckNameAvailability(accountName).NameAvailable;
@@ -149,7 +151,9 @@ namespace AzureStorageNew
         /// <param name="resourcesClient"></param>
         public static void RegisterStorageResourceProvider(ResourceManagementClient resourcesClient)
         {
+            Console.WriteLine("Registering Storage Resource Provider with subscription...");
             resourcesClient.Providers.Register("Microsoft.Storage");
+            Console.WriteLine("Storage Resource Provider registered.");
         }
         
         /// <summary>
@@ -158,13 +162,16 @@ namespace AzureStorageNew
         /// </summary>
         /// <param name="resourcesClient"></param>
         public static void CreateResourceGroup(string rgname, ResourceManagementClient resourcesClient)
-        {                        
+        {
+            Console.WriteLine("Creating a resource group...");
             var resourceGroup = resourcesClient.ResourceGroups.CreateOrUpdate(
                     rgname,
                     new ResourceGroup
                     {
                         Location = DefaultLocation
                     });
+            Console.WriteLine("Resource group created with name " + resourceGroup.Name);                                                                     
+
         }
 
         /// <summary>
@@ -172,13 +179,27 @@ namespace AzureStorageNew
         /// </summary>
         /// <param name="rgname">Resource Group Name</param>
         /// <param name="acctName">Account Name</param>
-        /// <param name="storageMgmtClient"></param>
-        private static void CreateStorageAccount(string rgname, string acctName, StorageManagementClient storageMgmtClient)
+        /// <param name="useCoolStorage">Use Cool Storage</param>
+        /// <param name="useEncryption">Use Encryption</param>
+        /// <param name="storageMgmtClient">Storage Management Client</param>
+        private static void CreateStorageAccount(string rgname, string acctName, bool useEncryption, bool useCoolStorage, StorageManagementClient storageMgmtClient)
         {                                                                       
             StorageAccountCreateParameters parameters = GetDefaultStorageAccountParameters();
+
+            if (useEncryption)
+            {
+                parameters.Encryption = new Encryption(new EncryptionServices(new EncryptionService(true)));
+            }
+
+            if (useCoolStorage)
+            {
+                parameters.Kind = Kind.BlobStorage;  //Cool storage is only available for BlobStorage storage accounts
+                parameters.AccessTier = AccessTier.Cool;
+            }
+
             Console.WriteLine("Creating a storage account...");
-            var storageAccountCreateResponse = storageMgmtClient.StorageAccounts.Create(rgname, acctName, parameters);
-            Console.WriteLine("Storage account created with name " + storageAccountCreateResponse.Name);                                                                     
+            var storageAccount = storageMgmtClient.StorageAccounts.Create(rgname, acctName, parameters);
+            Console.WriteLine("Storage account created with name " + storageAccount.Name);                                                                     
         }
 
         /// <summary>
@@ -200,17 +221,41 @@ namespace AzureStorageNew
         /// <param name="rgname">Resource Group Name</param>
         /// <param name="acctName">Account Name</param>
         /// <param name="storageMgmtClient"></param>
-        private static void UpdateStorageAccount(string rgname, string acctName, StorageManagementClient storageMgmtClient)
+        private static void UpdateStorageAccountSku(string rgname, string acctName, SkuName skuName, StorageManagementClient storageMgmtClient)
         {
             Console.WriteLine("Updating storage account...");
-            // Update storage account type
+            // Update storage account sku
             var parameters = new StorageAccountUpdateParameters
             {
-                Sku = new Sku(SkuName.StandardLRS)
+                Sku = new Sku(skuName)
             };
-            var response = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
-            Console.WriteLine("Account type on storage account updated to " + response.Sku.Name);           
-        }                                     
+            var storageAccount = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
+            Console.WriteLine("Sku on storage account updated to " + storageAccount.Sku.Name);           
+        }
+
+        private static void UpdateStorageAccountTier(string rgname, string acctName, AccessTier accessTier, StorageManagementClient storageMgmtClient)
+        {
+            Console.WriteLine("Updating storage account...");
+            // Update storage account sku
+            var parameters = new StorageAccountUpdateParameters
+            {
+                AccessTier = accessTier
+            };
+            var storageAccount = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
+            Console.WriteLine("Access Tier on storage account updated to " + storageAccount.AccessTier);
+        }
+
+        private static void UpdateStorageAccountEncryption(string rgname, string acctName, bool encryptionEnabled, StorageManagementClient storageMgmtClient)
+        {
+            Console.WriteLine("Updating storage account...");
+            // Update storage account sku
+            var parameters = new StorageAccountUpdateParameters
+            {
+                Encryption = new Encryption(new EncryptionServices(new EncryptionService(encryptionEnabled)))
+            };
+            var storageAccount = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
+            Console.WriteLine("Encryption enabled on storage account updated to " + storageAccount.Encryption.Services.Blob.Enabled);
+        }   
 
         /// <summary>
         /// Returns default values to create a storage account
