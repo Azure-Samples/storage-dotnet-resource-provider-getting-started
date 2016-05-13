@@ -66,6 +66,7 @@ namespace AzureStorageNew
 
         const string DefaultLocation = "westus"; 
         public static Sku DefaultSku = new Sku(SkuName.StandardGRS);
+        public static Kind DefaultKind = Kind.Storage;
         public static Dictionary<string, string> DefaultTags = new Dictionary<string, string> 
         {
             {"key1","value1"},
@@ -105,7 +106,7 @@ namespace AzureStorageNew
                 CreateResourceGroup(rgName, resourcesClient);
 
                 //Create a new account in a specific resource group with the specified account name                     
-                CreateStorageAccount(rgName, accountName, false, false, storageMgmtClient);
+                CreateStorageAccount(rgName, accountName, storageMgmtClient);
 
                 //Get all the account properties for a given resource group and account name
                 StorageAccount storAcct = storageMgmtClient.StorageAccounts.GetProperties(rgName, accountName);
@@ -124,19 +125,12 @@ namespace AzureStorageNew
 
                 //Update the storage account for a given account name and resource group
                 UpdateStorageAccountSku(rgName, accountName, SkuName.StandardLRS, storageMgmtClient);
-                //UpdateStorageAccountTier(rgName, accountName, AccessTier.Hot, storageMgmtClient);
-                //UpdateStorageAccountEncryption(rgName, accountName, false, storageMgmtClient);
 
                 //Check if the account name is available
                 bool? nameAvailable = storageMgmtClient.StorageAccounts.CheckNameAvailability(accountName).NameAvailable;
                 
                 //Delete a storage account with the given account name and a resource group
                 DeleteStorageAccount(rgName, accountName, storageMgmtClient);
-            }
-            catch (CloudException ce)
-            {
-                Console.WriteLine(ce.Message);
-                Console.ReadLine();
             }
             catch(Exception e)
             {
@@ -182,20 +176,9 @@ namespace AzureStorageNew
         /// <param name="useCoolStorage">Use Cool Storage</param>
         /// <param name="useEncryption">Use Encryption</param>
         /// <param name="storageMgmtClient">Storage Management Client</param>
-        private static void CreateStorageAccount(string rgname, string acctName, bool useEncryption, bool useCoolStorage, StorageManagementClient storageMgmtClient)
+        private static void CreateStorageAccount(string rgname, string acctName, StorageManagementClient storageMgmtClient)
         {                                                                       
             StorageAccountCreateParameters parameters = GetDefaultStorageAccountParameters();
-
-            if (useEncryption)
-            {
-                parameters.Encryption = new Encryption(new EncryptionServices(new EncryptionService(true)));
-            }
-
-            if (useCoolStorage)
-            {
-                parameters.Kind = Kind.BlobStorage;  //Cool storage is only available for BlobStorage storage accounts
-                parameters.AccessTier = AccessTier.Cool;
-            }
 
             Console.WriteLine("Creating a storage account...");
             var storageAccount = storageMgmtClient.StorageAccounts.Create(rgname, acctName, parameters);
@@ -233,30 +216,6 @@ namespace AzureStorageNew
             Console.WriteLine("Sku on storage account updated to " + storageAccount.Sku.Name);           
         }
 
-        private static void UpdateStorageAccountTier(string rgname, string acctName, AccessTier accessTier, StorageManagementClient storageMgmtClient)
-        {
-            Console.WriteLine("Updating storage account...");
-            // Update storage account sku
-            var parameters = new StorageAccountUpdateParameters
-            {
-                AccessTier = accessTier
-            };
-            var storageAccount = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
-            Console.WriteLine("Access Tier on storage account updated to " + storageAccount.AccessTier);
-        }
-
-        private static void UpdateStorageAccountEncryption(string rgname, string acctName, bool encryptionEnabled, StorageManagementClient storageMgmtClient)
-        {
-            Console.WriteLine("Updating storage account...");
-            // Update storage account sku
-            var parameters = new StorageAccountUpdateParameters
-            {
-                Encryption = new Encryption(new EncryptionServices(new EncryptionService(encryptionEnabled)))
-            };
-            var storageAccount = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
-            Console.WriteLine("Encryption enabled on storage account updated to " + storageAccount.Encryption.Services.Blob.Enabled);
-        }   
-
         /// <summary>
         /// Returns default values to create a storage account
         /// </summary>
@@ -266,6 +225,7 @@ namespace AzureStorageNew
             StorageAccountCreateParameters account = new StorageAccountCreateParameters
             {
                 Location = DefaultLocation,
+                Kind = DefaultKind,
                 Tags = DefaultTags,
                 Sku = DefaultSku
             };
