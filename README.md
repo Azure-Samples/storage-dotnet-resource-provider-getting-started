@@ -19,25 +19,54 @@ To run the sample, follow these steps:
 
 1. If you don't already have a Microsoft Azure subscription, you can register for a [free trial account](http://go.microsoft.com/fwlink/?LinkId=330212).
 2. Install [Visual Studio](https://www.visualstudio.com/downloads/download-visual-studio-vs.aspx) if you don't have it already. 
-2. Install the [Azure SDK for .NET](https://azure.microsoft.com/downloads/) if you have not already done so. We recommend using the most recent version.
-3. Clone this repository.
+3. Install the [Azure SDK for .NET](https://azure.microsoft.com/downloads/) if you have not already done so. We recommend using the most recent version.
+4. Clone the sample repository.
 
 		https://github.com/Azure-Samples/storage-dotnet-resource-provider-getting-started.git
 
-4. Open the sample solution in Visual Studio, and restore any packages if prompted.
-5. Add any desired breakpoints, and press F5 to run the sample in the debugger.
+5. Create an Azure service principal either through
+    [Azure CLI](https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal-cli/),
+    [PowerShell](https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal/)
+    or [the portal](https://azure.microsoft.com/documentation/articles/resource-group-create-service-principal-portal/). Note that you will need to specify the values shown in step 8 in order to run the sample, so it's recommended that you copy and save them during this step.
+
+6. Open the sample solution in Visual Studio, and restore any packages if prompted.
+7. In the sample source code, locate the constants for your subscription ID and resource group name, and specify values for them. 
+	
+		const string subscriptionId = "<subscriptionid>";         
+	
+	    //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
+	    const string rgName = "TestResourceGroup";        
+
+8. In the sample source code, locate the following variables, and provide the values that you generated when you created the service principle:
+
+        const string applicationId = "<applicationId>";
+        const string password = "<password>";
+        const string tenantId = "<tenantId>";
 
 ## What is program.cs doing?
 
-The sample walks you through several resource and resource group management operations. It starts by setting up a ResourceManagementClient object using your subscription and credentials.
+The sample walks you through several resource and resource group management operations. 
 
-It also sets up a ResourceGroup object (resource_group_params) to be used as a parameter in some of the API calls.
+### Get credentials and create management clients
 
-The sample registers the Storage Resource Provider: 
+The sample gets an authorization token and constructs the necessary credentials based on the token. The values generated when you created the Azure service principle above are used for this step.
+
+Next, the sample sets up a ResourceManagementClient object and a StorageManagementClient object using your subscription and the credentials.
+
+    string token = GetAuthorizationHeader();
+    TokenCredentials credential = new TokenCredentials(token);
+    ResourceManagementClient resourcesClient = new ResourceManagementClient(credential) { SubscriptionId = subscriptionId };
+    StorageManagementClient storageMgmtClient = new StorageManagementClient(credential) { SubscriptionId = subscriptionId };
+
+### Register the Storage Resource Provider
+
+The sample registers the Storage Resource Provider for the subscription: 
 
 	resourcesClient.Providers.Register("Microsoft.Storage");
 
-The sample creates a new resource group. 
+### Specify a resource group
+
+The sample creates a new resource group or specifies an existing resource group for the new storage account. 
 
     var resourceGroup = resourcesClient.ResourceGroups.CreateOrUpdate(
             rgname,
