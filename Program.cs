@@ -31,7 +31,7 @@ using Microsoft.Rest.Azure;
 /// Azure Storage Resource Provider enables customers to create and manage storage accounts 
 ///  
 /// Documentation References: 
-/// - What is a Storage Account - http://azure.microsoft.com/en-us/documentation/articles/storage-whatis-account/
+/// - How to create, manage, or delete a storage account in the Azure Portal - https://azure.microsoft.com/en-us/documentation/articles/storage-create-storage-account/
 /// - Storage Resource Provider REST API  documentation - https://msdn.microsoft.com/en-us/library/azure/mt163683.aspx 
 /// </summary>
 
@@ -39,31 +39,27 @@ namespace AzureStorageNew
 {
     public class StorageAccountTests
     {
-        const string subscriptionId = "<subscriptionid>";        
+        // You can locate your subscription ID on the Subscriptions blade of the Azure Portal (https://portal.azure.com).
+        const string subscriptionId = "<subscriptionid>";
 
-        //Resource Group Name. Replace this with a Resource Group of your choice.
+        //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
         const string rgName = "TestResourceGroup";        
         
         //Storage Account Name. Using random value to avoid conflicts.  Replace this with a storage account of your choice.
         static string accountName = "storagesample" + Guid.NewGuid().ToString().Substring(0,8);
 
-        //Please follow the Tutorial - at the link - https://azure.microsoft.com/en-gb/documentation/articles/virtual-machines-arm-deployment/
-        //This tutorial shows you how to use some of the available clients in the Compute, Storage, and Network .NET libraries 
-        //to create and delete resources in Microsoft Azure. 
-        //It also shows you how to authenticate the requests to Azure Resource Manager by using Azure Active Directory.
-        //Please follow steps 1 through 3 that will allow you to switch to the ARM mode, add your application to Azure AD and set permissions, install all the 
-        //necessary .NET libraries for Storage, Compute and Network and create credentials that are used to authenticate requests.
+        // To run the sample, you must first create an Azure service principal. To create the service principal, follow one of these guides:
+        //      Azure Portal: https://azure.microsoft.com/documentation/articles/resource-group-create-service-principal-portal/) 
+        //      PowerShell: https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal/
+        //      Azure CLI: https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal-cli/
+        // Creating the service principal will generate the values you need to specify for the constansts below.
 
-
-        //The following string values need to be replaced from what you obtain by 
-        //following the steps 1 using link https://azure.microsoft.com/en-gb/documentation/articles/virtual-machines-arm-deployment/
-
+        // Use the values generated when you created the Azure service principal.
         const string applicationId = "<applicationId>";
         const string password = "<password>";
         const string tenantId = "<tenantId>";
 
-        // These are used to create default accounts. You can choose any location and any storage account type.
-
+        // These values are used by the sample as defaults to create a new storage account. You can specify any location and any storage account type.
         const string DefaultLocation = "westus"; 
         public static Sku DefaultSku = new Sku(SkuName.StandardGRS);
         public static Kind DefaultKind = Kind.Storage;
@@ -131,6 +127,8 @@ namespace AzureStorageNew
                 
                 //Delete a storage account with the given account name and a resource group
                 DeleteStorageAccount(rgName, accountName, storageMgmtClient);
+
+                Console.ReadLine();
             }
             catch(Exception e)
             {

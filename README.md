@@ -37,7 +37,7 @@ To run the sample, follow these steps:
 	    //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
 	    const string rgName = "TestResourceGroup";        
 
-8. In the sample source code, locate the following variables, and provide the values that you generated when you created the service principle:
+8. In the sample source code, locate the following variables, and provide the values that you generated when you created the Azure service principal in step 5 above:
 
         const string applicationId = "<applicationId>";
         const string password = "<password>";
