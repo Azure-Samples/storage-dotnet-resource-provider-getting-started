@@ -24,10 +24,10 @@ To run the sample, follow these steps:
 
 		https://github.com/Azure-Samples/storage-dotnet-resource-provider-getting-started.git
 
-5. Create an Azure service principal either through
+5. Create an Azure service principal using 
     [Azure CLI](https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal-cli/),
     [PowerShell](https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal/)
-    or [the portal](https://azure.microsoft.com/documentation/articles/resource-group-create-service-principal-portal/). Note that you will need to specify the values shown in step 8 in order to run the sample, so it's recommended that you copy and save them during this step.
+    or [Azure Portal](https://azure.microsoft.com/documentation/articles/resource-group-create-service-principal-portal/). Note that you will need to specify the values shown in step 8 in order to run the sample, so it's recommended that you copy and save them during this step.
 
 6. Open the sample solution in Visual Studio, and restore any packages if prompted.
 7. In the sample source code, locate the constants for your subscription ID and resource group name, and specify values for them. 
