@@ -45,7 +45,7 @@ To run the sample, follow these steps:
 
 ## What is program.cs doing?
 
-The sample walks you through several resource and resource group management operations. 
+The sample walks you through several Storage Resource Provider operations. 
 
 ### Get credentials and create management clients
 
@@ -96,7 +96,7 @@ The sample lists all of the storage accounts in a given subscription:
     //Get all the storage accounts for a given subscription
     IEnumerable<StorageAccount> storAcctsSub = storageMgmtClient.StorageAccounts.List();
 
-It also lists storage accounts in the newly created resource group:
+It also lists storage accounts in the resource group:
 
     //Get the storage account keys for a given account and resource group
     IList<StorageAccountKey> acctKeys = storageMgmtClient.StorageAccounts.ListKeys(rgName, accountName).Keys;
