@@ -73,7 +73,7 @@ namespace AzureStorageNew
         private static string GetAuthorizationHeader()
         {           
             ClientCredential cc = new ClientCredential(applicationId, password);
-            var context = new AuthenticationContext("https://login.windows.net/" + tenantId);            
+            var context = new AuthenticationContext("https://login.microsoftonline.com/" + tenantId);            
             var result = context.AcquireToken("https://management.azure.com/", cc);
 
             if (result == null)
