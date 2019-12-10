@@ -14,17 +14,14 @@
 //
 
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using Microsoft.Azure;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Azure.Management.Resources;
 using Microsoft.Azure.Management.Resources.Models;
 using Microsoft.Azure.Management.Storage;
 using Microsoft.Azure.Management.Storage.Models;
 using Microsoft.Rest;
-using Microsoft.Rest.Azure;
 
 /// <summary>
 /// Azure Storage Resource Provider Sample - Demonstrate how to create and manage storage accounts using Storage Resource Provider. 
@@ -40,7 +37,7 @@ namespace AzureStorageNew
     public class StorageAccountTests
     {
         // You can locate your subscription ID on the Subscriptions blade of the Azure Portal (https://portal.azure.com).
-        const string subscriptionId = "<subscriptionid>";
+        const string subscriptionId = "<subscription-id>";
 
         //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
         const string rgName = "TestResourceGroup";        
@@ -62,7 +59,6 @@ namespace AzureStorageNew
         // These values are used by the sample as defaults to create a new storage account. You can specify any location and any storage account type.
         const string DefaultLocation = "westus"; 
         public static Sku DefaultSku = new Sku(SkuName.StandardGRS);
-        public static Kind DefaultKind = Kind.Storage;
         public static Dictionary<string, string> DefaultTags = new Dictionary<string, string> 
         {
             {"key1","value1"},
@@ -70,11 +66,11 @@ namespace AzureStorageNew
         };
 
         //The following method will enable you to use the token to create credentials
-        private static string GetAuthorizationHeader()
+        private static async Task<string> GetAuthorizationHeader()
         {           
             ClientCredential cc = new ClientCredential(applicationId, password);
             var context = new AuthenticationContext("https://login.windows.net/" + tenantId);            
-            var result = context.AcquireToken("https://management.azure.com/", cc);
+            var result = await context.AcquireTokenAsync("https://management.azure.com/", cc);
 
             if (result == null)
             {
@@ -88,7 +84,7 @@ namespace AzureStorageNew
 
         static void Main(string[] args)
         {
-            string token = GetAuthorizationHeader();
+            string token = GetAuthorizationHeader().Result;
             TokenCredentials credential = new TokenCredentials(token);
             ResourceManagementClient resourcesClient = new ResourceManagementClient(credential) { SubscriptionId = subscriptionId };
             StorageManagementClient storageMgmtClient = new StorageManagementClient(credential) { SubscriptionId = subscriptionId };
@@ -194,7 +190,7 @@ namespace AzureStorageNew
             Console.WriteLine("Deleting a storage account...");
             storageMgmtClient.StorageAccounts.Delete(rgname, acctName);
             Console.WriteLine("Storage account " + acctName + " deleted");
-        }                                               
+        }
 
         /// <summary>
         /// Updates the storage account
@@ -202,7 +198,7 @@ namespace AzureStorageNew
         /// <param name="rgname">Resource Group Name</param>
         /// <param name="acctName">Account Name</param>
         /// <param name="storageMgmtClient"></param>
-        private static void UpdateStorageAccountSku(string rgname, string acctName, SkuName skuName, StorageManagementClient storageMgmtClient)
+        private static void UpdateStorageAccountSku(string rgname, string acctName, string skuName, StorageManagementClient storageMgmtClient)
         {
             Console.WriteLine("Updating storage account...");
             // Update storage account sku
@@ -211,7 +207,7 @@ namespace AzureStorageNew
                 Sku = new Sku(skuName)
             };
             var storageAccount = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
-            Console.WriteLine("Sku on storage account updated to " + storageAccount.Sku.Name);           
+            Console.WriteLine("Sku on storage account updated to " + storageAccount.Sku.Name);
         }
 
         /// <summary>
@@ -223,7 +219,7 @@ namespace AzureStorageNew
             StorageAccountCreateParameters account = new StorageAccountCreateParameters
             {
                 Location = DefaultLocation,
-                Kind = DefaultKind,
+                Kind = Kind.StorageV2,
                 Tags = DefaultTags,
                 Sku = DefaultSku
             };
