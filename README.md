@@ -25,7 +25,7 @@ To run the sample, follow these steps:
 1. Install the [Azure SDK for .NET](https://azure.microsoft.com/downloads/) if you have not already done so. We recommend using the most recent version.
 1. Clone the sample repository.
 
-  `https://github.com/Azure-Samples/storage-dotnet-resource-provider-getting-started.git`
+  https://github.com/Azure-Samples/storage-dotnet-resource-provider-getting-started.git
 
 1. Create an Azure service principal using [Azure CLI](https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal-cli/), [PowerShell](https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal/), or the [Azure portal](https://azure.microsoft.com/documentation/articles/resource-group-create-service-principal-portal/). Note that you will need to specify the values shown in step 8 in order to run the sample, so it's recommended that you copy and save them during this step.
 
@@ -33,7 +33,7 @@ To run the sample, follow these steps:
 1. In the sample source code, locate the constants for your subscription ID and resource group name, and specify values for them. 
 
   ```csharp
-  const string subscriptionId = "<subscriptionid>";
+  const string subscriptionId = "<subscriptionId>";
   
   //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
   const string rgName = "TestResourceGroup";
@@ -78,12 +78,12 @@ The sample creates a new resource group or specifies an existing resource group 
 
 ```csharp
 var resourceGroup = resourcesClient.ResourceGroups.CreateOrUpdate(
-        rgname,
-        new ResourceGroup
-        {
-            Location = DefaultLocation
-        });
-```
+    rgname,
+    new ResourceGroup
+    {
+        Location = DefaultLocation
+      });
+    ```
 
 ### Create a new storage account
 
@@ -91,48 +91,60 @@ Next, the sample creates a new storage account that is associated with the resou
 
 In this case, the storage account name is randomly generated to assure uniqueness. However, the call to create a new storage account will succeed if an account with the same name already exists in the subscription.
 
-	// This call gets a set of values to use in creating the storage account, including the account location, 
-	// the kind of account, and the type of replication to use for the new account.
-    StorageAccountCreateParameters parameters = GetDefaultStorageAccountParameters();
+```csharp
+// This call gets a set of values to use in creating the storage account, including the account location, 
+// the kind of account, and the type of replication to use for the new account.
+StorageAccountCreateParameters parameters = GetDefaultStorageAccountParameters();
 
-	// This call creates the new storage account, using the newly created resource group and 
-	// the specified parameters.
-    var storageAccount = storageMgmtClient.StorageAccounts.Create(rgname, acctName, parameters);
+// This call creates the new storage account, using the newly created resource group and 
+// the specified parameters.
+var storageAccount = storageMgmtClient.StorageAccounts.Create(rgname, acctName, parameters);
+```
 
 ### List storage accounts in the subscription or resource group
 
-The sample lists all of the storage accounts in a given subscription: 
+The sample lists all of the storage accounts in a given subscription:
 
-    //Get all the storage accounts for a given subscription
-    IEnumerable<StorageAccount> storAcctsSub = storageMgmtClient.StorageAccounts.List();
+```csharp
+//Get all the storage accounts for a given subscription
+IEnumerable<StorageAccount> storAcctsSub = storageMgmtClient.StorageAccounts.List();
+```
 
 It also lists storage accounts in the resource group:
 
-    //Get the storage account keys for a given account and resource group
-    IList<StorageAccountKey> acctKeys = storageMgmtClient.StorageAccounts.ListKeys(rgName, accountName).Keys;
+```csharp
+//Get the storage account keys for a given account and resource group
+IList<StorageAccountKey> acctKeys = storageMgmtClient.StorageAccounts.ListKeys(rgName, accountName).Keys;
+```
 
 ### Read and regenerate storage account keys
 
 The sample lists storage account keys for the newly created storage account and resource group:
 
-    //Get the storage account keys for a given account and resource group
-    IList<StorageAccountKey> acctKeys = storageMgmtClient.StorageAccounts.ListKeys(rgName, accountName).Keys;
+```csharp
+//Get the storage account keys for a given account and resource group
+IList<StorageAccountKey> acctKeys = storageMgmtClient.StorageAccounts.ListKeys(rgName, accountName).Keys;
+```
 
 It also regenerates the account access keys:
 
-    //Regenerate the account key for a given account in a specific resource group
-    IList<StorageAccountKey> regenAcctKeys = storageMgmtClient.StorageAccounts.RegenerateKey(rgName, accountName, "key1").Keys;
+```csharp
+//Regenerate the account key for a given account in a specific resource group
+IList<StorageAccountKey> regenAcctKeys = storageMgmtClient.StorageAccounts.RegenerateKey(rgName, accountName, "key1").Keys;
+```
 
 ### Modify the storage account SKU
 
 The storage account SKU specifies what type of replication applies to the storage account. You can update the storage account SKU to change how the storage account is replicated, as shown in the sample:
 
-    // Update storage account sku
-    var parameters = new StorageAccountUpdateParameters
-    {
-        Sku = new Sku(skuName)
-    };
-    var storageAccount = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
+```csharp
+// Update storage account sku
+var parameters = new StorageAccountUpdateParameters
+{
+    Sku = new Sku(skuName)
+};
+var storageAccount = storageMgmtClient.StorageAccounts.Update(rgname, acctName, parameters);
+```
 
 Note that modifying the SKU for a production storage account may have associated costs. For example, if you convert a locally redundant storage account to a geo-redundant storage account, you will be charged for replicating your data to the secondary region. Before you modify the SKU for a production account, be sure to consider any cost implications. See [Azure Storage replication](https://azure.microsoft.com/documentation/articles/storage-redundancy/) for additional information about storage replication.
 
@@ -140,17 +152,21 @@ Note that modifying the SKU for a production storage account may have associated
 
 The sample checks whether a given storage account name is available in Azure: 
 
-    //Check if the account name is available
-    bool? nameAvailable = storageMgmtClient.StorageAccounts.CheckNameAvailability(accountName).NameAvailable;
+```csharp
+//Check if the account name is available
+bool? nameAvailable = storageMgmtClient.StorageAccounts.CheckNameAvailability(accountName).NameAvailable;
+```
 
 ### Delete the storage account
 
 Finally, the sample deletes the storage account that it created:
 
-    storageMgmtClient.StorageAccounts.Delete(rgname, acctName);
+```csharp
+storageMgmtClient.StorageAccounts.Delete(rgname, acctName);
+```
 
 ## More information
-- [How to create, manage, or delete a storage account in the Azure Portal](https://azure.microsoft.com/documentation/articles/storage-create-storage-account/)
+
+- [How to create, manage, or delete a storage account in the Azure portal](https://azure.microsoft.com/documentation/articles/storage-create-storage-account/)
 - [Storage Resource Provider Client Library for .NET](https://msdn.microsoft.com/library/azure/mt131037.aspx)
 - [Azure Storage Resource Provider REST API Reference](https://msdn.microsoft.com/library/azure/Mt163683.aspx)
-
