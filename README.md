@@ -22,27 +22,27 @@ To run the sample, follow these steps:
 1. Install the [Azure SDK for .NET](https://azure.microsoft.com/downloads/) if you have not already done so. We recommend using the most recent version.
 1. Clone the sample repository.
 
-  https://github.com/Azure-Samples/storage-dotnet-resource-provider-getting-started.git
+    `https://github.com/Azure-Samples/storage-dotnet-resource-provider-getting-started.git`
 
 1. Create an Azure service principal using [Azure CLI](https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal-cli/), [PowerShell](https://azure.microsoft.com/documentation/articles/resource-group-authenticate-service-principal/), or the [Azure portal](https://azure.microsoft.com/documentation/articles/resource-group-create-service-principal-portal/). Note that you will need to specify the values shown in step 8 in order to run the sample, so it's recommended that you copy and save them during this step.
 
 1. Open the sample solution in Visual Studio, and restore any packages if prompted.
 1. In the sample source code, locate the constants for your subscription ID and resource group name, and specify values for them. 
 
-  ```csharp
-  const string subscriptionId = "<subscriptionId>";
-  
-  //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
-  const string rgName = "TestResourceGroup";
-  ```
-
+    ```csharp
+    const string subscriptionId = "<subscriptionId>";
+    
+    //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
+    const string rgName = "TestResourceGroup";
+    ```
+    
 1. In the sample source code, locate the following variables, and provide the values that you generated when you created the Azure service principal in step 5 above:
 
-  ```csharp
-  const string applicationId = "<applicationId>";
-  const string password = "<password>";
-  const string tenantId = "<tenantId>";
-  ```
+    ```csharp
+    const string applicationId = "<applicationId>";
+    const string password = "<password>";
+    const string tenantId = "<tenantId>";
+    ```
 
 ## What is program.cs doing?
 
@@ -80,7 +80,7 @@ var resourceGroup = resourcesClient.ResourceGroups.CreateOrUpdate(
     {
         Location = DefaultLocation
       });
-    ```
+```
 
 ### Create a new storage account
 
@@ -164,6 +164,6 @@ storageMgmtClient.StorageAccounts.Delete(rgname, acctName);
 
 ## More information
 
-- [How to create, manage, or delete a storage account in the Azure portal](https://azure.microsoft.com/documentation/articles/storage-create-storage-account/)
-- [Storage Resource Provider Client Library for .NET](https://msdn.microsoft.com/library/azure/mt131037.aspx)
-- [Azure Storage Resource Provider REST API Reference](https://msdn.microsoft.com/library/azure/Mt163683.aspx)
+- [Create a storage account](https://azure.microsoft.com/documentation/articles/storage-create-storage-account/)
+- [Storage Resource Provider Client Library for .NET](https://docs.microsoft.com/dotnet/api/overview/azure/storage/management)
+- [Azure Storage Resource Provider REST API Reference](https://docs.microsoft.com/rest/api/storagerp)
