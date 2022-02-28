@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Azure.Management.Resources;
 using Microsoft.Azure.Management.Resources.Models;
 using Microsoft.Azure.Management.Storage;
 using Microsoft.Azure.Management.Storage.Models;
 using Microsoft.Rest;
+using Microsoft.Rest.Azure;
+
+using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// Azure Storage Resource Provider Sample - Demonstrate how to create and manage storage accounts using Storage Resource Provider. 
@@ -65,29 +65,22 @@ namespace AzureStorageNew
             {"key2","value2"}
         };
 
-        //The following method will enable you to use the token to create credentials
-        private static async Task<string> GetAuthorizationHeader()
-        {           
-            ClientCredential cc = new ClientCredential(applicationId, password);
-            var context = new AuthenticationContext("https://login.windows.net/" + tenantId);            
-            var result = await context.AcquireTokenAsync("https://management.azure.com/", cc);
-
-            if (result == null)
-            {
-                throw new InvalidOperationException("Failed to obtain the JWT token");
-            }
-
-            string token = result.AccessToken;
-
-            return token;
-        }
-
         static void Main(string[] args)
         {
-            string token = GetAuthorizationHeader().Result;
-            TokenCredentials credential = new TokenCredentials(token);
-            ResourceManagementClient resourcesClient = new ResourceManagementClient(credential) { SubscriptionId = subscriptionId };
-            StorageManagementClient storageMgmtClient = new StorageManagementClient(credential) { SubscriptionId = subscriptionId };
+            ResourceManagementClient resourcesClient = null;
+            StorageManagementClient storageMgmtClient = null;
+
+            try
+            {
+                ServiceClientCredentials credential = new CustomLoginCredentials();
+                resourcesClient = new ResourceManagementClient(credential) { SubscriptionId = subscriptionId };
+                storageMgmtClient = new StorageManagementClient(credential) { SubscriptionId = subscriptionId };
+            }
+            catch (CloudException e)
+            {
+                Console.WriteLine(e.Response);
+                Console.ReadLine();
+            }
 
             try
             {
