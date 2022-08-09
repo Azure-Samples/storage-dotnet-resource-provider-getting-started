@@ -38,7 +38,7 @@ namespace AzureStorageNew
     public class StorageAccountTests
     {
         // You can locate your subscription ID on the Subscriptions blade of the Azure Portal (https://portal.azure.com).
-        const string subscriptionId = "<subscriptionId";
+        const string subscriptionId = "<subscriptionId>";
 
         //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
         const string rgName = "TestResourceGroup";
