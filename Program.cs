@@ -64,9 +64,14 @@ namespace AzureStorageNew
 
             try
             {
-                //Get the subscription
+                //Create a resource identifier, then get the subscription resource
                 ResourceIdentifier resourceIdentifier = new ResourceIdentifier($"/subscriptions/{subscriptionId}");
+                
                 SubscriptionResource subscription = armClient.GetSubscriptionResource(resourceIdentifier);
+
+                //Register the Storage resource provider in the subscription
+                ResourceProviderResource resourceProvider = await subscription.GetResourceProviderAsync("Microsoft.Storage");
+                resourceProvider.Register();
 
                 //Create a new resource group (if one already exists then it gets updated)
                 ArmOperation<ResourceGroupResource> rgOperation = await subscription.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed, rgName, new ResourceGroupData(location));
@@ -75,26 +80,26 @@ namespace AzureStorageNew
 
                 //Create a new storage account in a specific resource group with the specified account name (request still succeeds if one already exists)
 
-                //first we need to define the StorageAccountCreateParameters
+                //First we need to define the StorageAccountCreateOrUpdateContent parameters
                 StorageAccountCreateOrUpdateContent parameters = GetStorageAccountParameters();
-                Console.WriteLine("Creating a storage account...");
 
-                //now we can create a storage account with defined account name and parameters
+                //Now we can create a storage account with defined account name and parameters
+                Console.WriteLine("Creating a storage account...");
                 StorageAccountCollection accountCollection = resourceGroup.GetStorageAccounts();
                 ArmOperation<StorageAccountResource> acctOperation = await accountCollection.CreateOrUpdateAsync(WaitUntil.Completed, storAccountName, parameters);
                 StorageAccountResource storageAccount = acctOperation.Value;
                 Console.WriteLine($"(Storage account created with name {storageAccount.Id.Name}");
 
-                //Get a list of storage accounts within a specific resource group
-                await GetStorageAccountsInResourceGroup(resourceGroup);
-
                 //Get all the storage accounts for a given subscription
                 await GetStorageAccountsForSubscription(subscription);
+
+                //Get a list of storage accounts within a specific resource group
+                await GetStorageAccountsInResourceGroup(resourceGroup);
 
                 //Get the storage account keys for a given account and resource group
                 GetStorageAccountKeys(storageAccount);
 
-                //Regenerate the account key for a given account in a specific resource group
+                //Regenerate an account key for a given account
                 StorageAccountRegenerateKeyContent regenKeyContent = new StorageAccountRegenerateKeyContent("key1");
                 StorageAccountGetKeysResult regenAcctKeys = storageAccount.RegenerateKey(regenKeyContent);
 
