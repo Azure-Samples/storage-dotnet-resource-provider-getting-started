@@ -4,19 +4,19 @@ languages:
 - csharp
 products:
 - azure
-description: "This sample shows how to manage your storage account using the Azure Storage Resource Provider for .NET."
+description: "This sample shows how to manage your storage account using the Azure Storage resource provider for .NET."
 urlFragment: storage-dotnet-resource-provider-getting-started
 ---
 # Getting Started with Azure Storage Resource Provider in .NET
 
-This sample shows how to manage your storage account using the Azure Storage Resource Provider for .NET. The Storage Resource Provider is a client library for working with the storage accounts in your Azure subscription. Using the client library, you can create a new storage account, read its properties, list all storage accounts in a given subscription or resource group, read and regenerate the storage account keys, and delete a storage account.  
+This sample shows how to manage your storage account using the Azure Storage resource provider for .NET. The Storage resource provider is a service based on Azure Resource Manager that provides access to management resources for Azure Storage. You can use the Azure Storage resource provider to create a new storage account, read its properties, list all storage accounts in a given subscription or resource group, read and regenerate the storage account keys, and delete a storage account.  
 
 **On this page**
 
-- Run this sample
-- What is program.cs doing?
+- Run the code sample
+- Understand what this sample is doing
 
-## Run this sample
+## Run the code sample
 
 To run the sample, follow these steps:
 
@@ -41,7 +41,7 @@ To run the sample, follow these steps:
 
 ## Understand what this sample is doing
 
-The sample walks you through several Storage Resource Provider operations.
+The sample walks you through several Storage resource provider operations.
 
 Namespaces for this example:
 
