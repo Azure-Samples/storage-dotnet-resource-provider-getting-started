@@ -38,10 +38,10 @@ namespace AzureStorageNew
     public class StorageAccountTests
     {
         // You can locate your subscription ID on the Subscriptions blade of the Azure Portal (https://portal.azure.com).
-        const string subscriptionId = "6ca7a88d-fa06-4873-bfe8-11caf0d637f8";
+        const string subscriptionId = "<subscriptionId";
 
         //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
-        const string rgName = "ResourceGroup1";
+        const string rgName = "TestResourceGroup";
 
         //Storage account name. Using random value to avoid conflicts. Replace this with a storage account of your choice.
         static readonly string storAccountName = $"storagesample{Guid.NewGuid().ToString().Substring(0, 8)}";
@@ -53,7 +53,7 @@ namespace AzureStorageNew
         // Creating the service principal will generate the values you need to specify for the constansts below.
 
         // These values are used by the sample as defaults to create a new storage account. You can specify any location and any storage account type.
-        static readonly AzureLocation location = AzureLocation.EastUS;
+        static readonly AzureLocation location = AzureLocation.WestUS;
         static readonly StorageSku sku = new StorageSku(StorageSkuName.StandardGrs);
         static readonly StorageKind kind = StorageKind.StorageV2;
 
@@ -86,10 +86,10 @@ namespace AzureStorageNew
                 Console.WriteLine($"(Storage account created with name {storageAccount.Id.Name}");
 
                 //Get a list of storage accounts within a specific resource group
-                GetStorageAccountsInResourceGroup(resourceGroup);
+                await GetStorageAccountsInResourceGroup(resourceGroup);
 
                 //Get all the storage accounts for a given subscription
-                GetStorageAccountsForSubscription(subscription);
+                await GetStorageAccountsForSubscription(subscription);
 
                 //Get the storage account keys for a given account and resource group
                 GetStorageAccountKeys(storageAccount);
@@ -152,7 +152,7 @@ namespace AzureStorageNew
             // Update storage account sku
             var currentSku = storageAccount.Get().Value.Data.Sku.Name;  //capture the current Sku value before updating
             StorageSku updateSku = new StorageSku(StorageSkuName.StandardLrs);
-            StorageAccountCreateOrUpdateContent updateParams = new (updateSku, kind, location);
+            StorageAccountCreateOrUpdateContent updateParams = new StorageAccountCreateOrUpdateContent(updateSku, kind, location);
             await accountCollection.CreateOrUpdateAsync(WaitUntil.Completed, storAccountName, updateParams);
             Console.WriteLine($"Sku on storage account updated from {currentSku} to {storageAccount.Get().Value.Data.Sku.Name}");
         }
@@ -160,7 +160,7 @@ namespace AzureStorageNew
     /// <returns>The parameters to provide for the account</returns>
     private static StorageAccountCreateOrUpdateContent GetStorageAccountParameters()
         {
-            StorageAccountCreateOrUpdateContent parameters = new (sku, kind, location);
+            StorageAccountCreateOrUpdateContent parameters = new StorageAccountCreateOrUpdateContent(sku, kind, location);
 
             return parameters;
         }
