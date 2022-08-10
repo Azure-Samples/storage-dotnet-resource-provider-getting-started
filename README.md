@@ -47,15 +47,15 @@ Namespaces for this example:
 
 ```csharp
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Azure;
+using Azure.Core;
 using Azure.Identity;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Storage;
 using Azure.ResourceManager.Storage.Models;
-using Azure.Core;
 ```
 
 ### Authenticate to Azure and create a client
@@ -136,17 +136,12 @@ AsyncPageable<StorageAccountResource> storAccts = resourceGroup.GetStorageAccoun
 
 ### List or regenerate storage account keys
 
-The sample lists storage account keys for the newly created storage account:
+The sample gets storage account keys for the newly created storage account:
 
 ```csharp
 //Get the storage account keys for a given account and resource group
 StorageAccountGetKeysResult result = storageAccount.GetKeys();
 IReadOnlyList<StorageAccountKey> acctKeys = result.Keys;
-Console.WriteLine($"List of storage account keys in {storageAccount.Id.Name}:");
-foreach (StorageAccountKey acctKey in acctKeys)
-{
-    Console.WriteLine($"\t{acctKey.KeyName}");
-}
 ```
 
 It also regenerates the account keys:
@@ -169,6 +164,15 @@ await accountCollection.CreateOrUpdateAsync(WaitUntil.Completed, storAccountName
 ```
 
 Note that modifying the SKU for a production storage account may have associated costs. For example, if you convert a locally redundant storage account to a geo-redundant storage account, you will be charged for replicating your data to the secondary region. Before you modify the SKU for a production account, be sure to consider any cost implications. See [Azure Storage replication](https://azure.microsoft.com/documentation/articles/storage-redundancy/) for additional information about storage replication.
+
+### Check storage account name availability
+
+The sample checks whether a given storage account name is available in Azure: 
+
+```csharp
+//Check if the account name is available
+bool? nameAvailable = subscription.CheckStorageAccountNameAvailability(new StorageAccountNameAvailabilityContent(storAccountName)).Value.IsNameAvailable;
+```
 
 ### Delete the storage account
 

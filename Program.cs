@@ -14,15 +14,15 @@
 //
 
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Azure;
+using Azure.Core;
 using Azure.Identity;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Storage;
 using Azure.ResourceManager.Storage.Models;
-using Azure.Core;
 
 /// <summary>
 /// Azure Storage Resource Provider Sample - Demonstrate how to create and manage storage accounts using Storage Resource Provider. 
@@ -97,7 +97,8 @@ namespace AzureStorageNew
                 await GetStorageAccountsInResourceGroup(resourceGroup);
 
                 //Get the storage account keys for a given account and resource group
-                GetStorageAccountKeys(storageAccount);
+                StorageAccountGetKeysResult result = storageAccount.GetKeys();
+                IReadOnlyList<StorageAccountKey> acctKeys = result.Keys;
 
                 //Regenerate an account key for a given account
                 StorageAccountRegenerateKeyContent regenKeyContent = new StorageAccountRegenerateKeyContent("key1");
@@ -105,6 +106,9 @@ namespace AzureStorageNew
 
                 //Update the storage account for a given account name and resource group
                 await UpdateStorageAccountSkuAsync(storageAccount, accountCollection);
+
+                //Check if the account name is available
+                bool? nameAvailable = subscription.CheckStorageAccountNameAvailability(new StorageAccountNameAvailabilityContent(storAccountName)).Value.IsNameAvailable;
 
                 ////Delete a storage account with the given account name and a resource group
                 storageAccount = await accountCollection.GetAsync(storAccountName);
@@ -138,16 +142,6 @@ namespace AzureStorageNew
             await foreach (StorageAccountResource storAcctSub in storAcctsSub)
             {
                 Console.WriteLine($"\t{storAcctSub.Id.Name}");
-            }
-        }
-        private static void GetStorageAccountKeys(StorageAccountResource storageAccount)
-        {
-            StorageAccountGetKeysResult result = storageAccount.GetKeys();
-            IReadOnlyList<StorageAccountKey> acctKeys = result.Keys;
-            Console.WriteLine($"List of storage account keys in {storageAccount.Id.Name}:");
-            foreach (StorageAccountKey acctKey in acctKeys)
-            {
-                Console.WriteLine($"\t{acctKey.KeyName}");
             }
         }
 
