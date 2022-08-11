@@ -127,9 +127,8 @@ namespace AzureStorageNew
         /// <summary>
         private static async Task GetStorageAccountsInResourceGroup(ResourceGroupResource resourceGroup)
         {
-            AsyncPageable<StorageAccountResource> storAccts = resourceGroup.GetStorageAccounts().GetAllAsync();
             Console.WriteLine($"List of storage accounts in {resourceGroup.Id.Name}:");
-            await foreach (StorageAccountResource storAcct in storAccts)
+            await foreach (StorageAccountResource storAcct in resourceGroup.GetStorageAccounts())
             {
                 Console.WriteLine($"\t{storAcct.Id.Name}");
             }
