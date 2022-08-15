@@ -88,7 +88,7 @@ namespace AzureStorageNew
                 StorageAccountCollection accountCollection = resourceGroup.GetStorageAccounts();
                 ArmOperation<StorageAccountResource> acctOperation = await accountCollection.CreateOrUpdateAsync(WaitUntil.Completed, storAccountName, parameters);
                 StorageAccountResource storageAccount = acctOperation.Value;
-                Console.WriteLine($"(Storage account created with name {storageAccount.Id.Name}");
+                Console.WriteLine($"Storage account created with name {storageAccount.Id.Name}");
 
                 //Get all the storage accounts for a given subscription
                 await GetStorageAccountsForSubscription(subscription);
