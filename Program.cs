@@ -40,10 +40,10 @@ namespace AzureStorageNew
         // You can locate your subscription ID on the Subscriptions blade of the Azure Portal (https://portal.azure.com).
         const string subscriptionId = "<subscriptionId>";
 
-        //Specify a resource group name of your choice. Specifying a new value will create a new resource group.
+        // Specify a resource group name of your choice. Specifying a new value will create a new resource group.
         const string rgName = "TestResourceGroup";
 
-        //Storage account name. Using random value to avoid conflicts. Replace this with a storage account of your choice.
+        // Storage account name. Using random value to avoid conflicts. Replace this with a storage account of your choice.
         static readonly string storAccountName = $"storagesample{Guid.NewGuid().ToString().Substring(0, 8)}";
 
         // To run the sample, you must first create an Azure service principal. To create the service principal, follow one of these guides:
@@ -59,58 +59,57 @@ namespace AzureStorageNew
 
         static async Task Main()
         {
-            //Authenticate to Azure and create the top-level ArmClient
+            // Authenticate to Azure and create the top-level ArmClient
             ArmClient armClient = new ArmClient(new DefaultAzureCredential());
 
             try
             {
-                //Create a resource identifier, then get the subscription resource
+                // Create a resource identifier, then get the subscription resource
                 ResourceIdentifier resourceIdentifier = new ResourceIdentifier($"/subscriptions/{subscriptionId}");
                 
                 SubscriptionResource subscription = armClient.GetSubscriptionResource(resourceIdentifier);
 
-                //Register the Storage resource provider in the subscription
+                // Register the Storage resource provider in the subscription
                 ResourceProviderResource resourceProvider = await subscription.GetResourceProviderAsync("Microsoft.Storage");
                 resourceProvider.Register();
 
-                //Create a new resource group (if one already exists then it gets updated)
+                // Create a new resource group (if one already exists then it gets updated)
                 ArmOperation<ResourceGroupResource> rgOperation = await subscription.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed, rgName, new ResourceGroupData(location));
                 ResourceGroupResource resourceGroup = rgOperation.Value;
                 Console.WriteLine($"Resource group: {resourceGroup.Id.Name}");
 
-                //Create a new storage account in a specific resource group with the specified account name (request still succeeds if one already exists)
+                // Create a new storage account in a specific resource group with the specified account name (request still succeeds if one already exists)
 
-                //First we need to define the StorageAccountCreateOrUpdateContent parameters
+                // First we need to define the StorageAccountCreateOrUpdateContent parameters
                 StorageAccountCreateOrUpdateContent parameters = GetStorageAccountParameters();
 
-                //Now we can create a storage account with defined account name and parameters
+                // Now we can create a storage account with defined account name and parameters
                 Console.WriteLine("Creating a storage account...");
                 StorageAccountCollection accountCollection = resourceGroup.GetStorageAccounts();
                 ArmOperation<StorageAccountResource> acctOperation = await accountCollection.CreateOrUpdateAsync(WaitUntil.Completed, storAccountName, parameters);
                 StorageAccountResource storageAccount = acctOperation.Value;
                 Console.WriteLine($"Storage account created with name {storageAccount.Id.Name}");
 
-                //Get all the storage accounts for a given subscription
+                // Get all the storage accounts for a given subscription
                 await GetStorageAccountsForSubscription(subscription);
 
-                //Get a list of storage accounts within a specific resource group
+                // Get a list of storage accounts within a specific resource group
                 await GetStorageAccountsInResourceGroup(resourceGroup);
 
-                //Get the storage account keys for a given account and resource group
-                StorageAccountGetKeysResult result = storageAccount.GetKeys();
-                IReadOnlyList<StorageAccountKey> acctKeys = result.Keys;
+                // Get the storage account keys for a given account and resource group
+                Pageable<StorageAccountKey> acctKeys = storageAccount.GetKeys();
 
-                //Regenerate an account key for a given account
+                // Regenerate an account key for a given account
                 StorageAccountRegenerateKeyContent regenKeyContent = new StorageAccountRegenerateKeyContent("key1");
-                StorageAccountGetKeysResult regenAcctKeys = storageAccount.RegenerateKey(regenKeyContent);
+                Pageable<StorageAccountKey> regenAcctKeys = storageAccount.RegenerateKey(regenKeyContent);
 
                 //Update the storage account for a given account name and resource group
                 await UpdateStorageAccountSkuAsync(storageAccount, accountCollection);
 
-                //Check if the account name is available
+                // Check if the account name is available
                 bool? nameAvailable = subscription.CheckStorageAccountNameAvailability(new StorageAccountNameAvailabilityContent(storAccountName)).Value.IsNameAvailable;
 
-                ////Delete a storage account with the given account name and a resource group
+                // Delete a storage account with the given account name and a resource group
                 storageAccount = await accountCollection.GetAsync(storAccountName);
                 Console.WriteLine($"Deleting storage account {storageAccount.Id.Name}");
                 await storageAccount.DeleteAsync(WaitUntil.Completed);
@@ -148,7 +147,7 @@ namespace AzureStorageNew
         {
             Console.WriteLine("Updating storage account...");
             // Update storage account sku
-            var currentSku = storageAccount.Get().Value.Data.Sku.Name;  //capture the current Sku value before updating
+            var currentSku = storageAccount.Get().Value.Data.Sku.Name;  // capture the current Sku value before updating
             StorageSku updateSku = new StorageSku(StorageSkuName.StandardLrs);
             StorageAccountCreateOrUpdateContent updateParams = new StorageAccountCreateOrUpdateContent(updateSku, kind, location);
             await accountCollection.CreateOrUpdateAsync(WaitUntil.Completed, storAccountName, updateParams);

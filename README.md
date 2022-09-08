@@ -63,7 +63,7 @@ using Azure.ResourceManager.Storage.Models;
 The default option to create an authenticated client is to use `DefaultAzureCredential`. Since all management APIs go through the same endpoint, only one top-level `ArmClient` needs to be created to interact with resources.
 
 ```csharp
-//Authenticate to Azure and create the top-level ArmClient
+// Authenticate to Azure and create the top-level ArmClient
 ArmClient armClient = new ArmClient(new DefaultAzureCredential());
 ```
 
@@ -74,7 +74,7 @@ Additional documentation for `DefaultAzureCredential` can be found in the `Azure
 The sample creates a `ResourceIdentifier` object using the `subscriptionId` constant, then gets the subscription:
 
 ```csharp
-//Create a resource identifier, then get the subscription resource
+// Create a resource identifier, then get the subscription resource
 ResourceIdentifier resourceIdentifier = new ResourceIdentifier($"/subscriptions/{subscriptionId}");
 SubscriptionResource subscription = armClient.GetSubscriptionResource(resourceIdentifier);
 ```
@@ -84,7 +84,7 @@ SubscriptionResource subscription = armClient.GetSubscriptionResource(resourceId
 The sample registers the Storage resource provider in the subscription:
 
 ```csharp
-//Register the Storage resource provider in the subscription
+// Register the Storage resource provider in the subscription
 ResourceProviderResource resourceProvider = await subscription.GetResourceProviderAsync("Microsoft.Storage");
 resourceProvider.Register();
 ```
@@ -94,7 +94,7 @@ resourceProvider.Register();
 The sample creates a new resource group or specifies an existing resource group for the new storage account:
 
 ```csharp
-//Create a new resource group (if one already exists then it gets updated)
+// Create a new resource group (if one already exists then it gets updated)
 ArmOperation<ResourceGroupResource> rgOperation = await subscription.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed, rgName, new ResourceGroupData(location));
 ResourceGroupResource resourceGroup = rgOperation.Value;
 ```
@@ -106,13 +106,13 @@ Next, the sample creates a new storage account that is associated with the resou
 In this example, the storage account name is randomly generated to assure uniqueness. However, the request to create a new storage account will still succeed if an account with the same name already exists in the subscription.
 
 ```csharp
-//Create a new storage account in a specific resource group with the specified account name (request still succeeds if one already exists)
+// Create a new storage account in a specific resource group with the specified account name (request still succeeds if one already exists)
 
-//First we need to define the StorageAccountCreateOrUpdateContent parameters
-//This includes, but is not limited to, account location, kind, and replication type
+// First we need to define the StorageAccountCreateOrUpdateContent parameters
+// This includes, but is not limited to, account location, kind, and replication type
 StorageAccountCreateOrUpdateContent parameters = GetStorageAccountParameters();
 
-//Now we can create a storage account resource with the defined account name and parameters
+// Now we can create a storage account resource with the defined account name and parameters
 StorageAccountCollection accountCollection = resourceGroup.GetStorageAccounts();
 ArmOperation<StorageAccountResource> acctOperation = await accountCollection.CreateOrUpdateAsync(WaitUntil.Completed, storAccountName, parameters);
 StorageAccountResource storageAccount = acctOperation.Value;
@@ -123,14 +123,14 @@ StorageAccountResource storageAccount = acctOperation.Value;
 The sample lists all of the storage accounts in a given subscription:
 
 ```csharp
-//Get all the storage accounts for a given subscription
+// Get all the storage accounts for a given subscription
 AsyncPageable<StorageAccountResource> storAcctsSub = subscription.GetStorageAccountsAsync();
 ```
 
 It also lists storage accounts in the resource group:
 
 ```csharp
-//Get a list of storage accounts within a specific resource group
+// Get a list of storage accounts within a specific resource group
 AsyncPageable<StorageAccountResource> storAccts = resourceGroup.GetStorageAccounts().GetAllAsync();
 ```
 
@@ -139,17 +139,16 @@ AsyncPageable<StorageAccountResource> storAccts = resourceGroup.GetStorageAccoun
 The sample gets storage account keys for the newly created storage account:
 
 ```csharp
-//Get the storage account keys for a given account and resource group
-StorageAccountGetKeysResult result = storageAccount.GetKeys();
-IReadOnlyList<StorageAccountKey> acctKeys = result.Keys;
+// Get the storage account keys for a given account and resource group
+Pageable<StorageAccountKey> acctKeys = storageAccount.GetKeys();
 ```
 
 It also regenerates the account keys:
 
 ```csharp
-//Regenerate an account key for a given account
+// Regenerate an account key for a given account
 StorageAccountRegenerateKeyContent regenKeyContent = new StorageAccountRegenerateKeyContent("key1");
-StorageAccountGetKeysResult regenAcctKeys = storageAccount.RegenerateKey(regenKeyContent);
+Pageable<StorageAccountKey> regenAcctKeys = storageAccount.RegenerateKey(regenKeyContent);
 ```
 
 ### Modify the storage account SKU
@@ -170,7 +169,7 @@ Note that modifying the SKU for a production storage account may have associated
 The sample checks whether a given storage account name is available in Azure: 
 
 ```csharp
-//Check if the account name is available
+// Check if the account name is available
 bool? nameAvailable = subscription.CheckStorageAccountNameAvailability(new StorageAccountNameAvailabilityContent(storAccountName)).Value.IsNameAvailable;
 ```
 
